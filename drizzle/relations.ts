@@ -1,1 +1,18 @@
-import {} from "./schema";
+import { relations } from "drizzle-orm";
+import { approvals, assets, brands, briefs, comments, contentItems, contentTags, passwordResetTokens, performanceRecords, savedViews, sessions, tags, users, workspaceMembers, workspaces } from "./schema";
+
+export const usersRelations = relations(users, ({ many }) => ({ memberships: many(workspaceMembers), sessions: many(sessions), resetTokens: many(passwordResetTokens), comments: many(comments) }));
+export const workspacesRelations = relations(workspaces, ({ one, many }) => ({ owner: one(users, { fields: [workspaces.ownerId], references: [users.id] }), members: many(workspaceMembers), brands: many(brands), content: many(contentItems), assets: many(assets), views: many(savedViews) }));
+export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({ workspace: one(workspaces, { fields: [workspaceMembers.workspaceId], references: [workspaces.id] }), user: one(users, { fields: [workspaceMembers.userId], references: [users.id] }) }));
+export const brandsRelations = relations(brands, ({ one, many }) => ({ workspace: one(workspaces, { fields: [brands.workspaceId], references: [workspaces.id] }), content: many(contentItems) }));
+export const contentItemsRelations = relations(contentItems, ({ one, many }) => ({ workspace: one(workspaces, { fields: [contentItems.workspaceId], references: [workspaces.id] }), brand: one(brands, { fields: [contentItems.brandId], references: [brands.id] }), brief: one(briefs), assets: many(assets), comments: many(comments), approvals: many(approvals), performance: many(performanceRecords), tags: many(contentTags) }));
+export const briefsRelations = relations(briefs, ({ one }) => ({ content: one(contentItems, { fields: [briefs.contentItemId], references: [contentItems.id] }) }));
+export const assetsRelations = relations(assets, ({ one }) => ({ workspace: one(workspaces, { fields: [assets.workspaceId], references: [workspaces.id] }), content: one(contentItems, { fields: [assets.contentItemId], references: [contentItems.id] }) }));
+export const commentsRelations = relations(comments, ({ one }) => ({ content: one(contentItems, { fields: [comments.contentItemId], references: [contentItems.id] }), author: one(users, { fields: [comments.userId], references: [users.id] }) }));
+export const approvalsRelations = relations(approvals, ({ one }) => ({ content: one(contentItems, { fields: [approvals.contentItemId], references: [contentItems.id] }), reviewer: one(users, { fields: [approvals.reviewerId], references: [users.id] }) }));
+export const performanceRelations = relations(performanceRecords, ({ one }) => ({ content: one(contentItems, { fields: [performanceRecords.contentItemId], references: [contentItems.id] }) }));
+export const tagsRelations = relations(tags, ({ one, many }) => ({ workspace: one(workspaces, { fields: [tags.workspaceId], references: [workspaces.id] }), content: many(contentTags) }));
+export const contentTagsRelations = relations(contentTags, ({ one }) => ({ content: one(contentItems, { fields: [contentTags.contentItemId], references: [contentItems.id] }), tag: one(tags, { fields: [contentTags.tagId], references: [tags.id] }) }));
+export const sessionsRelations = relations(sessions, ({ one }) => ({ user: one(users, { fields: [sessions.userId], references: [users.id] }) }));
+export const passwordResetRelations = relations(passwordResetTokens, ({ one }) => ({ user: one(users, { fields: [passwordResetTokens.userId], references: [users.id] }) }));
+export const savedViewsRelations = relations(savedViews, ({ one }) => ({ workspace: one(workspaces, { fields: [savedViews.workspaceId], references: [workspaces.id] }), user: one(users, { fields: [savedViews.userId], references: [users.id] }) }));
